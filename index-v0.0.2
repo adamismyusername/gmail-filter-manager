@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail Filter Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ecf0f1;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #34495e;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .input-section, .output-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        input[type="email"], input[type="text"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="email"]:focus, input[type="text"]:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-success {
+            background: #27ae60;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .email-list {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .email-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s ease;
+        }
+
+        .email-item:hover {
+            background: #f8f9fa;
+        }
+
+        .email-item:last-child {
+            border-bottom: none;
+        }
+
+        .email-text {
+            flex: 1;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .email-type {
+            font-size: 11px;
+            color: #6c757d;
+            margin-left: 10px;
+            padding: 2px 8px;
+            background: #e9ecef;
+            border-radius: 12px;
+        }
+
+        .remove-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .remove-btn:hover {
+            background: #c0392b;
+        }
+
+        .filter-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .character-count {
+            text-align: right;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .character-count.warning {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        .character-count.danger {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .collapsible {
+            margin-top: 20px;
+        }
+
+        .collapsible-header {
+            background: #ecf0f1;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            user-select: none;
+            transition: background 0.3s ease;
+            color: #2c3e50;
+        }
+
+        .collapsible-header:hover {
+            background: #d5dbdb;
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #bdc3c7;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            background: white;
+        }
+
+        .collapsible-content.active {
+            display: block;
+        }
+
+        .bulk-import {
+            margin-bottom: 20px;
+        }
+
+        .bulk-textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        .preview-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f4f6f7;
+            border: 1px solid #d5dbdb;
+            border-radius: 4px;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .preview-content {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #34495e;
+        }
+
+        .status-bar {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .filter-stats {
+            color: #7f8c8d;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .warning {
+            background: #f4f6f7;
+            color: #2c3e50;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #d5dbdb;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fadbd8;
+            color: #922b21;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #f1948a;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .success {
+            background: #d5f4e6;
+            color: #0e6b47;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #a3e4d7;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .button-group {
+                justify-content: center;
+            }
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            background: #95a5a6;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .file-input-label:hover {
+            background: #7f8c8d;
+        }
+
+        /* Radio Button Styles */
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-bottom: 8px;
+            transform: scale(1.2);
+        }
+
+        .radio-option label {
+            cursor: pointer;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .radio-description {
+            font-size: 12px;
+            color: #7f8c8d;
+            line-height: 1.3;
+            margin-top: 2px;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Gmail Filter Generator</h1>
+            <p>Create powerful Gmail filters with ease - manage your inbox like a pro</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2 class="section-title">
+                    ⚙️ Filter Configuration
+                </h2>
+
+                <!-- Email Input -->
+                <div class="form-group">
+                    <label for="emailInput">Email Address:</label>
+                    <div class="form-row">
+                        <div style="flex: 1;">
+                            <input type="email" id="emailInput" placeholder="Enter email address">
+                        </div>
+                        <div>
+                            <button class="btn" onclick="addEmail()">Add Email</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filter Type Radio Buttons -->
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="exact" name="filterType" value="exact" checked>
+                            <label for="exact">Exact Email Only</label>
+                            <div class="radio-description">Filters only the specific email address entered</div>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="subdomain" name="filterType" value="subdomain">
+                            <label for="subdomain">Sub-Domain Only</label>
+                            <div class="radio-description">Filters all emails from the specific subdomain (e.g., mail.google.com)</div>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="root" name="filterType" value="root">
+                            <label for="root">Root Domain Only</label>
+                            <div class="radio-description">Filters all emails from the root domain only (e.g., google.com)</div>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="all" name="filterType" value="all">
+                            <label for="all">All Domains</label>
+                            <div class="radio-description">Filters all emails from the domain and all subdomains</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Import -->
+                <div class="bulk-import">
+                    <label for="bulkEmails">Bulk Import (one email per line):</label>
+                    <textarea id="bulkEmails" class="bulk-textarea" placeholder="email1@example.com&#10;email2@example.com&#10;email3@example.com"></textarea>
+                    <div class="button-group" style="margin-top: 10px;">
+                        <button class="btn btn-secondary" onclick="bulkImport()">Import All</button>
+                        <button class="btn btn-secondary" onclick="clearBulkInput()">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Filter Action -->
+                <div class="form-group">
+                    <label for="filterAction">Filter Action:</label>
+                    <select id="filterAction">
+                        <option value="archive">Archive (Skip Inbox)</option>
+                        <option value="delete">Delete</option>
+                    </select>
+                </div>
+
+                <!-- File Operations -->
+                <div class="form-group">
+                    <label>Load Existing Filter:</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="loadFilter" accept=".xml,.json" onchange="loadFilterFile(this)">
+                        <label for="loadFilter" class="file-input-label">📂 Load Filter File</label>
+                    </div>
+                </div>
+
+                <!-- Advanced Regex Section -->
+                <div class="collapsible">
+                    <div class="collapsible-header" onclick="toggleCollapsible('regexSection')">
+                        🔧 Advanced: Custom Regex Pattern
+                    </div>
+                    <div class="collapsible-content" id="regexSection">
+                        <label for="customRegex">Custom Regex Pattern:</label>
+                        <input type="text" id="customRegex" placeholder="e.g., from:(.*@(company1|company2)\.com)">
+                        <small style="color: #6c757d; display: block; margin-top: 5px;">
+                            Advanced users: Use Gmail search operators with regex patterns
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="button-group" style="margin-top: 20px;">
+                    <button class="btn" onclick="undoAction()">↶ Undo</button>
+                    <button class="btn" onclick="redoAction()">↷ Redo</button>
+                    <button class="btn btn-danger" onclick="clearAllEmails()">🗑️ Clear All</button>
+                </div>
+            </div>
+
+            <!-- Output Section -->
+            <div class="output-section">
+                <h2 class="section-title">
+                    📋 Generated Filters
+                </h2>
+
+                <!-- Email List -->
+                <div class="form-group">
+                    <label>Email List:</label>
+                    <div class="email-list" id="emailList">
+                        <div style="padding: 20px; text-align: center; color: #6c757d;">
+                            No emails added yet. Add some emails to get started!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Preview -->
+                <div class="preview-section">
+                    <div class="preview-title">Filter Preview:</div>
+                    <div class="preview-content" id="filterPreview">Add emails to see the filter preview</div>
+                </div>
+
+                <!-- Filter Output -->
+                <div class="form-group">
+                    <label>Gmail Filter (Ready to Copy):</label>
+                    <div class="character-count" id="charCount">0 / 1469 characters</div>
+                    <div class="filter-output" id="filterOutput">Add emails above to generate filter...</div>
+                </div>
+
+                <!-- Export Buttons -->
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="downloadXML()">⬇️ Download XML</button>
+                    <button class="btn btn-secondary" onclick="exportEmailList()">💾 Export Email List</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="filter-stats" id="filterStats">
+                0 emails • 0 filters will be created
+            </div>
+            <div class="action-buttons">
+                <span id="statusMessage">Ready</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let emailList = [];
+        let actionHistory = [];
+        let historyIndex = -1;
+        const MAX_FILTER_LENGTH = 1469;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDisplay();
+            
+            // Keyboard shortcuts
+            document.getElementById('emailInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addEmail();
+                }
+                if (e.ctrlKey && e.key === 'Enter') {
+                    e.preventDefault();
+                    addEmail();
+                    this.focus();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    undoAction();
+                }
+                if ((e.ctrlKey && e.key === 'y') || (e.ctrlKey && e.shiftKey && e.key === 'Z')) {
+                    e.preventDefault();
+                    redoAction();
+                }
+            });
+        });
+
+        // History Management
+        function saveState(action) {
+            const state = {
+                emailList: JSON.parse(JSON.stringify(emailList)),
+                action: action,
+                timestamp: Date.now()
+            };
+            
+            // Remove future history if we're not at the end
+            actionHistory = actionHistory.slice(0, historyIndex + 1);
+            actionHistory.push(state);
+            historyIndex++;
+            
+            // Limit history size
+            if (actionHistory.length > 20) {
+                actionHistory.shift();
+                historyIndex--;
+            }
+        }
+
+        function undoAction() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                emailList = JSON.parse(JSON.stringify(actionHistory[historyIndex].emailList));
+                updateDisplay();
+                showStatus('Undo: ' + actionHistory[historyIndex + 1].action, 'success');
+            } else {
+                showStatus('Nothing to undo', 'warning');
+            }
+        }
+
+        function redoAction() {
+            if (historyIndex < actionHistory.length - 1) {
+                historyIndex++;
+                emailList = JSON.parse(JSON.stringify(actionHistory[historyIndex].emailList));
+                updateDisplay();
+                showStatus('Redo: ' + actionHistory[historyIndex].action, 'success');
+            } else {
+                showStatus('Nothing to redo', 'warning');
+            }
+        }
+
+        // Email Management
+        function addEmail() {
+            const emailInput = document.getElementById('emailInput');
+            const filterTypeRadio = document.querySelector('input[name="filterType"]:checked');
+            const email = emailInput.value.trim().toLowerCase();
+            
+            if (!email) {
+                showStatus('Please enter an email address', 'error');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showStatus('Please enter a valid email address', 'error');
+                return;
+            }
+
+            // Check for duplicates
+            const existingEmails = emailList.map(item => item.email);
+            if (existingEmails.includes(email)) {
+                showStatus('Email already exists in the list', 'warning');
+                return;
+            }
+
+            // Check for potential domain conflicts and subdomain fallback
+            const domain = email.split('@')[1];
+            const domainParts = domain.split('.');
+            
+            // Check if user selected subdomain but there's no subdomain
+            if (filterTypeRadio.value === 'subdomain' && domainParts.length <= 2) {
+                showStatus('No subdomain detected - using root domain filter instead', 'warning');
+            }
+            
+            const conflicts = checkDomainConflicts(email, filterTypeRadio.value);
+            if (conflicts.length > 0) {
+                showStatus(`Warning: This may conflict with existing ${conflicts.join(', ')} filters`, 'warning');
+            }
+
+            saveState('Added email: ' + email);
+            
+            emailList.push({
+                email: email,
+                type: filterTypeRadio.value,
+                addedAt: Date.now()
+            });
+            
+            emailInput.value = '';
+            updateDisplay();
+            showStatus('Email added successfully', 'success');
+            
+            // Focus back on input for rapid entry
+            emailInput.focus();
+        }
+
+        function removeEmail(index) {
+            saveState('Removed email: ' + emailList[index].email);
+            emailList.splice(index, 1);
+            updateDisplay();
+            showStatus('Email removed', 'success');
+        }
+
+        function bulkImport() {
+            const bulkInput = document.getElementById('bulkEmails');
+            const emails = bulkInput.value.split('\n')
+                .map(email => email.trim().toLowerCase())
+                .filter(email => email.length > 0);
+            
+            if (emails.length === 0) {
+                showStatus('Please enter some emails to import', 'warning');
+                return;
+            }
+
+            let added = 0;
+            let skipped = 0;
+            let invalid = 0;
+
+            saveState('Bulk import: ' + emails.length + ' emails');
+
+            const existingEmails = emailList.map(item => item.email);
+            const filterTypeRadio = document.querySelector('input[name="filterType"]:checked');
+
+            emails.forEach(email => {
+                if (!isValidEmail(email)) {
+                    invalid++;
+                    return;
+                }
+
+                if (existingEmails.includes(email)) {
+                    skipped++;
+                    return;
+                }
+
+                emailList.push({
+                    email: email,
+                    type: filterTypeRadio.value,
+                    addedAt: Date.now()
+                });
+                existingEmails.push(email);
+                added++;
+            });
+
+            updateDisplay();
+            showStatus(`Bulk import complete: ${added} added, ${skipped} skipped, ${invalid} invalid`, 'success');
+        }
+
+        function clearBulkInput() {
+            document.getElementById('bulkEmails').value = '';
+        }
+
+        function clearAllEmails() {
+            if (emailList.length === 0) {
+                showStatus('Email list is already empty', 'warning');
+                return;
+            }
+
+            if (confirm('Are you sure you want to clear all emails?')) {
+                saveState('Cleared all emails');
+                emailList = [];
+                updateDisplay();
+                showStatus('All emails cleared', 'success');
+            }
+        }
+
+        // Validation Functions
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        function checkDomainConflicts(newEmail, newType) {
+            const conflicts = [];
+            const newDomain = newEmail.split('@')[1];
+            const newRootDomain = getRootDomain(newDomain);
+            const newDomainParts = newDomain.split('.');
+
+            emailList.forEach(item => {
+                const existingDomain = item.email.split('@')[1];
+                const existingRootDomain = getRootDomain(existingDomain);
+                const existingDomainParts = existingDomain.split('.');
+
+                // Check various conflict scenarios
+                if (newType === 'root' && item.type === 'subdomain' && newRootDomain === existingRootDomain) {
+                    conflicts.push('sub-domain');
+                }
+                if (newType === 'subdomain' && item.type === 'root' && newRootDomain === existingRootDomain) {
+                    conflicts.push('root domain');
+                }
+                if (newType === 'all' && (item.type === 'subdomain' || item.type === 'root') && newRootDomain === existingRootDomain) {
+                    conflicts.push('domain');
+                }
+                if ((newType === 'subdomain' || newType === 'root') && item.type === 'all' && newRootDomain === existingRootDomain) {
+                    conflicts.push('all domains');
+                }
+                if (newType === 'exact' && (item.type === 'subdomain' || item.type === 'root' || item.type === 'all') && 
+                    (newDomain === existingDomain || newRootDomain === existingRootDomain)) {
+                    conflicts.push('domain');
+                }
+            });
+
+            return [...new Set(conflicts)];
+        }
+
+        function getRootDomain(domain) {
+            const parts = domain.split('.');
+            if (parts.length <= 2) return domain;
+            return parts.slice(-2).join('.');
+        }
+
+        // Filter Generation
+        function generateFilters() {
+            if (emailList.length === 0) return [];
+
+            const customRegex = document.getElementById('customRegex').value.trim();
+            if (customRegex) {
+                return [{
+                    name: 'AI Managed (Custom Regex)',
+                    query: customRegex,
+                    charCount: customRegex.length
+                }];
+            }
+
+            const filters = [];
+            let currentFilter = [];
+            let currentLength = 0;
+            let filterIndex = 1;
+
+            emailList.forEach(item => {
+                const query = generateEmailQuery(item);
+                const queryLength = query.length;
+
+                // Check if adding this query would exceed the limit
+                if (currentLength + queryLength + (currentFilter.length > 0 ? 4 : 0) > MAX_FILTER_LENGTH) {
+                    // Save current filter and start a new one
+                    if (currentFilter.length > 0) {
+                        const filterName = filterIndex === 1 ? 'AI Managed' : `AI Managed ${filterIndex}`;
+                        filters.push({
+                            name: filterName,
+                            query: '(' + currentFilter.join(' OR ') + ')',
+                            charCount: currentLength
+                        });
+                        filterIndex++;
+                        currentFilter = [];
+                        currentLength = 0;
+                    }
+                }
+
+                currentFilter.push(query);
+                currentLength += queryLength + (currentFilter.length > 1 ? 4 : 0); // +4 for " OR "
+            });
+
+            // Add the last filter
+            if (currentFilter.length > 0) {
+                const filterName = filterIndex === 1 ? 'AI Managed' : `AI Managed ${filterIndex}`;
+                filters.push({
+                    name: filterName,
+                    query: '(' + currentFilter.join(' OR ') + ')',
+                    charCount: currentLength
+                });
+            }
+
+            return filters;
+        }
+
+        function generateEmailQuery(item) {
+            const email = item.email;
+            const domain = email.split('@')[1];
+            const domainParts = domain.split('.');
+            
+            switch (item.type) {
+                case 'exact':
+                    return `from:${email}`;
+                case 'subdomain':
+                    // Check if there's actually a subdomain
+                    if (domainParts.length <= 2) {
+                        // No subdomain, fallback to root domain
+                        return `from:@${domain}`;
+                    }
+                    return `from:@${domain}`;
+                case 'root':
+                    const rootDomain = getRootDomain(domain);
+                    return `from:@${rootDomain}`;
+                case 'all':
+                    const rootDomainAll = getRootDomain(domain);
+                    return `from:${rootDomainAll}`;
+                default:
+                    return `from:${email}`;
+            }
+        }
+
+        // Display Updates
+        function updateDisplay() {
+            updateEmailList();
+            updateFilterOutput();
+            updateFilterStats();
+            updateFilterPreview();
+        }
+
+        function updateEmailList() {
+            const emailListDiv = document.getElementById('emailList');
+            
+            if (emailList.length === 0) {
+                emailListDiv.innerHTML = `
+                    <div style="padding: 20px; text-align: center; color: #6c757d;">
+                        No emails added yet. Add some emails to get started!
+                    </div>`;
+                return;
+            }
+
+            const html = emailList.map((item, index) => {
+                const typeLabels = {
+                    exact: 'Exact Email',
+                    subdomain: 'Sub-Domain',
+                    root: 'Root Domain',
+                    all: 'All Domains'
+                };
+
+                return `
+                    <div class="email-item">
+                        <span class="email-text">${item.email}</span>
+                        <span class="email-type">${typeLabels[item.type]}</span>
+                        <button class="remove-btn" onclick="removeEmail(${index})">×</button>
+                    </div>`;
+            }).join('');
+
+            emailListDiv.innerHTML = html;
+        }
+
+        function updateFilterOutput() {
+            const outputDiv = document.getElementById('filterOutput');
+            const charCountDiv = document.getElementById('charCount');
+            
+            const filters = generateFilters();
+            
+            if (filters.length === 0) {
+                outputDiv.textContent = 'Add emails above to generate filter...';
+                charCountDiv.textContent = '0 / 1469 characters';
+                charCountDiv.className = 'character-count';
+                return;
+            }
+
+            const output = filters.map(filter => 
+                `Filter: ${filter.name}\nQuery: ${filter.query}\nCharacters: ${filter.charCount}/1469\n`
+            ).join('\n' + '='.repeat(50) + '\n\n');
+
+            outputDiv.textContent = output;
+
+            // Update character count for the first filter
+            const firstFilter = filters[0];
+            const charCount = firstFilter.charCount;
+            charCountDiv.textContent = `${charCount} / 1469 characters`;
+            
+            if (charCount > 1400) {
+                charCountDiv.className = 'character-count danger';
+            } else if (charCount > 1200) {
+                charCountDiv.className = 'character-count warning';
+            } else {
+                charCountDiv.className = 'character-count';
+            }
+        }
+
+        function updateFilterStats() {
+            const statsDiv = document.getElementById('filterStats');
+            const filters = generateFilters();
+            
+            statsDiv.textContent = `${emailList.length} emails • ${filters.length} filter${filters.length !== 1 ? 's' : ''} will be created`;
+        }
+
+        function updateFilterPreview() {
+            const previewDiv = document.getElementById('filterPreview');
+            
+            if (emailList.length === 0) {
+                previewDiv.textContent = 'Add emails to see the filter preview';
+                return;
+            }
+
+            const filters = generateFilters();
+            if (filters.length > 0) {
+                const examples = emailList.slice(0, 3).map(item => {
+                    const domain = item.email.split('@')[1];
+                    switch (item.type) {
+                        case 'exact':
+                            return `Exact: ${item.email}`;
+                        case 'full':
+                            return `Full Domain: *@${domain}`;
+                        case 'root':
+                            return `Root Domain: *@${getRootDomain(domain)}`;
+                    }
+                }).join(', ');
+                
+                previewDiv.textContent = `Will catch emails from: ${examples}${emailList.length > 3 ? ` and ${emailList.length - 3} more...` : ''}`;
+            }
+        }
+
+        // File Operations
+        function loadFilterFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    
+                    if (file.name.endsWith('.json')) {
+                        // Load JSON format
+                        const data = JSON.parse(content);
+                        if (data.emails && Array.isArray(data.emails)) {
+                            saveState('Loaded filter file: ' + file.name);
+                            emailList = data.emails;
+                            updateDisplay();
+                            showStatus(`Loaded ${emailList.length} emails from ${file.name}`, 'success');
+                        } else {
+                            showStatus('Invalid JSON format', 'error');
+                        }
+                    } else if (file.name.endsWith('.xml')) {
+                        // Parse XML format (Gmail filter export)
+                        parseGmailFilterXML(content);
+                    }
+                } catch (error) {
+                    showStatus('Error loading file: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function parseGmailFilterXML(xmlContent) {
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlContent, 'text/xml');
+                const entries = xmlDoc.querySelectorAll('entry');
+                
+                const emails = [];
+                entries.forEach(entry => {
+                    const fromProperty = entry.querySelector('apps\\:property[name="from"], property[name="from"]');
+                    if (fromProperty) {
+                        const value = fromProperty.getAttribute('value');
+                        if (value) {
+                            // Parse the Gmail filter format
+                            const emailMatches = value.match(/[\w.-]+@[\w.-]+\.\w+/g);
+                            if (emailMatches) {
+                                emailMatches.forEach(email => {
+                                    if (!emails.some(item => item.email === email)) {
+                                        emails.push({
+                                            email: email,
+                                            type: 'exact',
+                                            addedAt: Date.now()
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+
+                if (emails.length > 0) {
+                    saveState('Loaded Gmail XML filter');
+                    emailList = emails;
+                    updateDisplay();
+                    showStatus(`Loaded ${emails.length} emails from Gmail filter`, 'success');
+                } else {
+                    showStatus('No email addresses found in XML file', 'warning');
+                }
+            } catch (error) {
+                showStatus('Error parsing XML: ' + error.message, 'error');
+            }
+        }
+
+        // Export Functions
+        function downloadXML() {
+            const filters = generateFilters();
+            if (filters.length === 0) {
+                showStatus('No filters to download', 'warning');
+                return;
+            }
+
+            const action = document.getElementById('filterAction').value;
+            
+            filters.forEach((filter, index) => {
+                const xml = generateGmailFilterXML(filter, action);
+                downloadFile(xml, `gmail-filter-${filter.name.replace(/\s+/g, '-').toLowerCase()}.xml`, 'application/xml');
+            });
+
+            showStatus(`Downloaded ${filters.length} XML filter file${filters.length > 1 ? 's' : ''}`, 'success');
+        }
+
+        function generateGmailFilterXML(filter, action) {
+            const timestamp = new Date().toISOString();
+            const actionProperties = action === 'delete' 
+                ? '<apps:property name="shouldTrash" value="true"/>'
+                : '<apps:property name="shouldArchive" value="true"/>';
+
+            return `<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns='http://www.w3.org/2005/Atom' xmlns:apps='http://schemas.google.com/apps/2006'>
+  <title>Mail Filters</title>
+  <updated>${timestamp}</updated>
+  <entry>
+    <category term='filter'></category>
+    <title>Mail Filter</title>
+    <apps:property name='hasTheWord' value='${filter.query}'/>
+    <apps:property name='label' value='AI Managed'/>
+    <apps:property name='shouldMarkAsRead' value='true'/>
+    <apps:property name='shouldNeverSpam' value='true'/>
+    ${actionProperties}
+  </entry>
+</feed>`;
+        }
+
+        function exportEmailList() {
+            if (emailList.length === 0) {
+                showStatus('No emails to export', 'warning');
+                return;
+            }
+
+            const exportData = {
+                emails: emailList,
+                exportedAt: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            const json = JSON.stringify(exportData, null, 2);
+            downloadFile(json, 'gmail-filter-emails.json', 'application/json');
+            showStatus('Email list exported successfully', 'success');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Utility Functions
+        function toggleCollapsible(id) {
+            const content = document.getElementById(id);
+            content.classList.toggle('active');
+        }
+
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = type;
+            
+            // Clear status after 3 seconds
+            setTimeout(() => {
+                statusDiv.textContent = 'Ready';
+                statusDiv.className = '';
+            }, 3000);
+        }
+
+        // Initialize empty state
+        saveState('Initial state');
+    </script>
+</body>
+</html>
