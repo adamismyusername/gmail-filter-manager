@@ -395,7 +395,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📧 Gmail Filter Generator</h1>
+            <h1>📧 Gmail Filter Generator v0.0.2</h1>
             <p>Create powerful Gmail filters with ease - manage your inbox like a pro</p>
         </div>
 
@@ -416,9 +416,10 @@
                         <div style="flex: 1;">
                             <label for="filterType">Filter Type:</label>
                             <select id="filterType">
-                                <option value="exact">Exact Email</option>
-                                <option value="full">Full Domain (includes subdomains)</option>
+                                <option value="exact">Exact Email Only</option>
+                                <option value="subdomain">Sub-Domain Only</option>
                                 <option value="root">Root Domain Only</option>
+                                <option value="all">All Domains</option>
                             </select>
                         </div>
                         <div>
@@ -627,7 +628,15 @@
                 return;
             }
 
-            // Check for potential domain conflicts
+            // Check for potential domain conflicts and subdomain fallback
+            const domain = email.split('@')[1];
+            const domainParts = domain.split('.');
+            
+            // Check if user selected subdomain but there's no subdomain
+            if (filterType.value === 'subdomain' && domainParts.length <= 2) {
+                showStatus('No subdomain detected - using root domain filter instead', 'warning');
+            }
+            
             const conflicts = checkDomainConflicts(email, filterType.value);
             if (conflicts.length > 0) {
                 showStatus(`Warning: This may conflict with existing ${conflicts.join(', ')} filters`, 'warning');
@@ -728,19 +737,27 @@
             const conflicts = [];
             const newDomain = newEmail.split('@')[1];
             const newRootDomain = getRootDomain(newDomain);
+            const newDomainParts = newDomain.split('.');
 
             emailList.forEach(item => {
                 const existingDomain = item.email.split('@')[1];
                 const existingRootDomain = getRootDomain(existingDomain);
+                const existingDomainParts = existingDomain.split('.');
 
                 // Check various conflict scenarios
-                if (newType === 'root' && item.type === 'full' && newRootDomain === existingRootDomain) {
-                    conflicts.push('full domain');
+                if (newType === 'root' && item.type === 'subdomain' && newRootDomain === existingRootDomain) {
+                    conflicts.push('sub-domain');
                 }
-                if (newType === 'full' && item.type === 'root' && newRootDomain === existingRootDomain) {
+                if (newType === 'subdomain' && item.type === 'root' && newRootDomain === existingRootDomain) {
                     conflicts.push('root domain');
                 }
-                if (newType === 'exact' && (item.type === 'full' || item.type === 'root') && 
+                if (newType === 'all' && (item.type === 'subdomain' || item.type === 'root') && newRootDomain === existingRootDomain) {
+                    conflicts.push('domain');
+                }
+                if ((newType === 'subdomain' || newType === 'root') && item.type === 'all' && newRootDomain === existingRootDomain) {
+                    conflicts.push('all domains');
+                }
+                if (newType === 'exact' && (item.type === 'subdomain' || item.type === 'root' || item.type === 'all') && 
                     (newDomain === existingDomain || newRootDomain === existingRootDomain)) {
                     conflicts.push('domain');
                 }
@@ -811,15 +828,28 @@
         }
 
         function generateEmailQuery(item) {
+            const email = item.email;
+            const domain = email.split('@')[1];
+            const domainParts = domain.split('.');
+            
             switch (item.type) {
                 case 'exact':
-                    return `from:${item.email}`;
-                case 'full':
-                    return `from:${item.email.split('@')[1]}`;
+                    return `from:${email}`;
+                case 'subdomain':
+                    // Check if there's actually a subdomain
+                    if (domainParts.length <= 2) {
+                        // No subdomain, fallback to root domain
+                        return `from:@${domain}`;
+                    }
+                    return `from:@${domain}`;
                 case 'root':
-                    return `from:${getRootDomain(item.email.split('@')[1])}`;
+                    const rootDomain = getRootDomain(domain);
+                    return `from:@${rootDomain}`;
+                case 'all':
+                    const rootDomainAll = getRootDomain(domain);
+                    return `from:${rootDomainAll}`;
                 default:
-                    return `from:${item.email}`;
+                    return `from:${email}`;
             }
         }
 
@@ -844,9 +874,10 @@
 
             const html = emailList.map((item, index) => {
                 const typeLabels = {
-                    exact: 'Exact',
-                    full: 'Full Domain',
-                    root: 'Root Domain'
+                    exact: 'Exact Email',
+                    subdomain: 'Sub-Domain',
+                    root: 'Root Domain',
+                    all: 'All Domains'
                 };
 
                 return `
